@@ -13,14 +13,14 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
   const orderService: OrderService = req.scope.resolve("orderService");
   try {
     const order = await orderService.retrieveByCartId(id);
-    res.status(200);
+    res.json(order).status(200);
   } catch (error) {
     try {
       const ca = await cartService.authorizePayment(id);
-      const data = await orderService.createFromCart(ca.id);
-      res.status(200);
+      const order = await orderService.createFromCart(ca.id);
+      res.json(order).status(200);
     } catch (err) {
-      console.error("Error completing order:", err);
+      console.error("Error completing order by Tamara webhook:", err);
       res.status(500);
     }
   }

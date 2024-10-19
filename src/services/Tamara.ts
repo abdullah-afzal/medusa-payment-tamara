@@ -14,7 +14,7 @@ class MyPaymentProcessor extends AbstractPaymentProcessor {
       private   tamara_token: string;
       private   tamara_api: string;
       private   notification: string;
-      private   web_endpoint: string;
+      private   tamara_web_endpoint: string;
       private    cart: Cart;
       private    itemsService: itemsService;
       private    logger : Logger;
@@ -24,7 +24,7 @@ class MyPaymentProcessor extends AbstractPaymentProcessor {
             this.logger = logger;
             this.tamara_token = options.tamara_token;
             this.tamara_api = options.tamara_api;
-            this.web_endpoint = options.web_endpoint;
+            this.tamara_web_endpoint = options.tamara_web_endpoint;
             this.notification = options.notification;
       }
       updatePaymentData(sessionId: string, data: Record<string, unknown>): Promise<Record<string, unknown> | PaymentProcessorError> {
@@ -124,6 +124,7 @@ class MyPaymentProcessor extends AbstractPaymentProcessor {
             const cart = await this.itemsService.getCart(context.resource_id);
             this.cart = cart;
             const currency_code = cart.region.currency_code.toUpperCase();
+            const country_code = cart.shipping_address.country_code;
 
             const data = {
                   "order_reference_id": context.resource_id,
@@ -132,7 +133,7 @@ class MyPaymentProcessor extends AbstractPaymentProcessor {
                         "currency": context.currency_code.toUpperCase()
                   },
                   "description": `Customer Order n° ${context.resource_id} with total of ${humanizeAmount(context.amount, context.currency_code)}`,
-                  "country_code": currency_code.slice(0, 2),
+                  "country_code": country_code,
                   "payment_type": "PAY_BY_INSTALMENTS",
                   "instalments": 3, 
                   "items": await this.itemsService.getitems(context),
@@ -147,7 +148,7 @@ class MyPaymentProcessor extends AbstractPaymentProcessor {
                         "last_name": cart.shipping_address?.last_name || "Customer",
                         "line1": cart.shipping_address?.address_1,
                         "city": cart.shipping_address?.city,
-                        "country_code": currency_code.slice(0, 2),
+                        "country_code": country_code,
                   },
 
                   "tax_amount": {
@@ -159,9 +160,9 @@ class MyPaymentProcessor extends AbstractPaymentProcessor {
                         "currency": currency_code
                   },
                   "merchant_url": {
-                        "success": `${this.web_endpoint}/checkout`,
-                        "failure": `${this.web_endpoint}/failure`,
-                        "cancel": `${this.web_endpoint}/cancel`,
+                        "success": `${this.tamara_web_endpoint}/${country_code}/verify/checkout`,
+                        "failure": `${this.tamara_web_endpoint}/${country_code}/verify/failure`,
+                        "cancel": `${this.tamara_web_endpoint}/${country_code}/verify/cancel`,
                         "notification": this.notification,
                   },
                   "platform": "medusa"
