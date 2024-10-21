@@ -133,7 +133,7 @@ class MyPaymentProcessor extends AbstractPaymentProcessor {
                         "currency": context.currency_code.toUpperCase()
                   },
                   "description": `Customer Order n° ${context.resource_id} with total of ${humanizeAmount(context.amount, context.currency_code)}`,
-                  "country_code": country_code,
+                  "country_code": currency_code.slice(0, 2),
                   "payment_type": "PAY_BY_INSTALMENTS",
                   "instalments": 3, 
                   "items": await this.itemsService.getitems(context),
@@ -148,7 +148,7 @@ class MyPaymentProcessor extends AbstractPaymentProcessor {
                         "last_name": cart.shipping_address?.last_name || "Customer",
                         "line1": cart.shipping_address?.address_1,
                         "city": cart.shipping_address?.city,
-                        "country_code": country_code,
+                        "country_code": currency_code.slice(0, 2),
                   },
 
                   "tax_amount": {
